@@ -1,102 +1,45 @@
-/*
-	olc::NES - Mapper Base Class (Abstract)
-	"Thanks Dad for believing computers were gonna be a big deal..." - javidx9
-
-	License (OLC-3)
-	~~~~~~~~~~~~~~~
-
-	Copyright 2018-2019 OneLoneCoder.com
-
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions
-	are met:
-
-	1. Redistributions or derivations of source code must retain the above
-	copyright notice, this list of conditions and the following disclaimer.
-
-	2. Redistributions or derivative works in binary form must reproduce
-	the above copyright notice. This list of conditions and the following
-	disclaimer must be reproduced in the documentation and/or other
-	materials provided with the distribution.
-
-	3. Neither the name of the copyright holder nor the names of its
-	contributors may be used to endorse or promote products derived
-	from this software without specific prior written permission.
-
-	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-	"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-	LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-	A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-	HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-	SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-	LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-	DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-	THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-	OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
-	Relevant Video: https://youtu.be/xdzOvpYPmGE
-
-	Links
-	~~~~~
-	YouTube:	https://www.youtube.com/javidx9
-				https://www.youtube.com/javidx9extra
-	Discord:	https://discord.gg/WhwHUMV
-	Twitter:	https://www.twitter.com/javidx9
-	Twitch:		https://www.twitch.tv/javidx9
-	GitHub:		https://www.github.com/onelonecoder
-	Patreon:	https://www.patreon.com/javidx9
-	Homepage:	https://www.onelonecoder.com
-
-	Author
-	~~~~~~
-	David Barr, aka javidx9, ㎡neLoneCoder 2019
-*/
-
 #pragma once
-#include <cstdint>
 
-enum MIRROR
-{
-	HARDWARE,
-	HORIZONTAL,
-	VERTICAL,
+#include<cstdint>
+
+// 表示游戏映射name table的方式
+enum MIRROR {
+	HARDWARE,  // 由硬件指定，即文件中读取的信息指定
+	HORIZONTAL,  // 横向
+	VERTICAL,  // 纵向
 	ONESCREEN_LO,
-	ONESCREEN_HI,
+	ONESCREEN_HI
 };
 
-class Mapper
-{
+class Mapper {
 public:
 	Mapper(uint8_t prgBanks, uint8_t chrBanks);
 	~Mapper();
 
 public:
-	// Transform CPU bus address into PRG ROM offset
-	virtual bool cpuMapRead(uint16_t addr, uint32_t& mapped_addr, uint8_t& data) = 0;
+	// 将CPU传过来的地址转化为对应的PRG ROM上的地址值，CPU的0x8000-0xFFFF被Mapper所转换
+	// 定义一个纯虚函数，要求子类一定要实现一个自己的版本，第一个参数为传过来的CPU地址，第二个为映射后的地址，第三个在有一些Mapper中才有用
+	virtual bool cpuMapRead(uint16_t addr, uint32_t& mapped_addr, uint8_t& data) = 0;  
 	virtual bool cpuMapWrite(uint16_t addr, uint32_t& mapped_addr, uint8_t data = 0) = 0;
 
-	// Transform PPU bus address into CHR ROM offset
+	// 将PPU传过来的地址转化为对应的PRG ROM上的地址值，PPU的0x0000-0x1FFF被Mapper转换
+	// 定义一个纯虚函数，要求子类一定要实现一个自己的版本，第一个参数为传过来的CPU地址，第二个为映射后的地址
 	virtual bool ppuMapRead(uint16_t addr, uint32_t& mapped_addr) = 0;
 	virtual bool ppuMapWrite(uint16_t addr, uint32_t& mapped_addr) = 0;
 
-	// Reset mapper to known state
-	virtual void reset() = 0;
+	virtual void reset() = 0;  // 重置Mapper状态
 
-	// Get Mirror mode if mapper is in control
+	// 提供一个返回镜像模式的接口,虚函数，Mapper提供一个默认实现，子类可以自己选择是否改写，利用动态绑定
 	virtual MIRROR mirror();
 
-	// IRQ Interface
+	// 中断接口
 	virtual bool irqState();
-	virtual void irqClear();
+	virtual void irqClear();  // 不提供默认实现
 
-	// Scanline Counting
-	virtual void scanline();
+	// 扫描线计数
+	virtual void scanline();  // 不提供默认实现
 
 protected:
-	// These are stored locally as many of the mappers require this information
-	uint8_t nPRGBanks = 0;
-	uint8_t nCHRBanks = 0;
+	uint8_t nPRGBanks = 0;  // 程序段的个数，一段16KB
+	uint8_t nCHRBanks = 0;  // 图形段的个数，一段8KB
 };
-

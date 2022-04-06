@@ -1,93 +1,60 @@
+#include"Mapper.h"
+
 /*
-	olc::NES - Mapper Base Class (Abstract)
-	"Thanks Dad for believing computers were gonna be a big deal..." - javidx9
-
-	License (OLC-3)
-	~~~~~~~~~~~~~~~
-
-	Copyright 2018-2019 OneLoneCoder.com
-
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions
-	are met:
-
-	1. Redistributions or derivations of source code must retain the above
-	copyright notice, this list of conditions and the following disclaimer.
-
-	2. Redistributions or derivative works in binary form must reproduce
-	the above copyright notice. This list of conditions and the following
-	disclaimer must be reproduced in the documentation and/or other
-	materials provided with the distribution.
-
-	3. Neither the name of the copyright holder nor the names of its
-	contributors may be used to endorse or promote products derived
-	from this software without specific prior written permission.
-
-	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-	"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-	LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-	A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-	HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-	SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-	LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-	DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-	THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-	OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
-	Relevant Video: https://youtu.be/xdzOvpYPmGE
-
-	Links
-	~~~~~
-	YouTube:	https://www.youtube.com/javidx9
-				https://www.youtube.com/javidx9extra
-	Discord:	https://discord.gg/WhwHUMV
-	Twitter:	https://www.twitter.com/javidx9
-	Twitch:		https://www.twitch.tv/javidx9
-	GitHub:		https://www.github.com/onelonecoder
-	Patreon:	https://www.patreon.com/javidx9
-	Homepage:	https://www.onelonecoder.com
-
-	Author
-	~~~~~~
-	David Barr, aka javidx9, ㎡neLoneCoder 2019
+* Mapper类的构造函数
+* 第一个参数表示程序段的数量，每个段大小为16KB
+* 第二个参数表示图像段的数量，每个段大小为8KB
 */
-
-#include "Mapper.h"
-
 Mapper::Mapper(uint8_t prgBanks, uint8_t chrBanks)
 {
 	nPRGBanks = prgBanks;
 	nCHRBanks = chrBanks;
 
+	// 初始化时reset以下
 	reset();
 }
 
-
+/*
+* 析构函数
+*/
 Mapper::~Mapper()
 {
+	// 没有动态申请动态空间，所以函数体为空
 }
 
-void Mapper::reset()
-{
+/*
+* 虽然是纯虚函数，但提供一个空实现
+*/
+void Mapper::reset() {
 
 }
 
+/*
+* 返回name table的镜像方式，默认由硬件指定，也就是由nes文件头中的信息指定
+*/
 MIRROR Mapper::mirror()
 {
 	return MIRROR::HARDWARE;
 }
 
+/*
+* 中断接口
+*/
 bool Mapper::irqState()
 {
+	// 默认返回false
 	return false;
 }
-
+/*
+* 作为基类，未提供默认实现
+*/
 void Mapper::irqClear()
 {
 }
 
+/*
+* 作为基类，未提供默认实现
+*/
 void Mapper::scanline()
 {
 }

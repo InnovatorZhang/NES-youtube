@@ -1,129 +1,103 @@
+#include"Mapper_000.h"
+
 /*
-	olc::NES - Mapper 000 - NROM
-	"Thanks Dad for believing computers were gonna be a big deal..." - javidx9
-
-	License (OLC-3)
-	~~~~~~~~~~~~~~~
-
-	Copyright 2018-2019 OneLoneCoder.com
-
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions
-	are met:
-
-	1. Redistributions or derivations of source code must retain the above
-	copyright notice, this list of conditions and the following disclaimer.
-
-	2. Redistributions or derivative works in binary form must reproduce
-	the above copyright notice. This list of conditions and the following
-	disclaimer must be reproduced in the documentation and/or other
-	materials provided with the distribution.
-
-	3. Neither the name of the copyright holder nor the names of its
-	contributors may be used to endorse or promote products derived
-	from this software without specific prior written permission.
-
-	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-	"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-	LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-	A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-	HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-	SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-	LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-	DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-	THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-	OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
-	Relevant Video: https://youtu.be/xdzOvpYPmGE
-
-	Links
-	~~~~~
-	YouTube:	https://www.youtube.com/javidx9
-				https://www.youtube.com/javidx9extra
-	Discord:	https://discord.gg/WhwHUMV
-	Twitter:	https://www.twitter.com/javidx9
-	Twitch:		https://www.twitch.tv/javidx9
-	GitHub:		https://www.github.com/onelonecoder
-	Patreon:	https://www.patreon.com/javidx9
-	Homepage:	https://www.onelonecoder.com
-
-	Author
-	~~~~~~
-	David Barr, aka javidx9, ㎡neLoneCoder 2019
+* Mapper_000类的构造函数
+* 直接调用父类的对应函数初始化即可
 */
-#include "Mapper_000.h"
-
-Mapper_000::Mapper_000(uint8_t prgBanks, uint8_t chrBanks) : Mapper(prgBanks, chrBanks)
+Mapper_000::Mapper_000(uint8_t prgBanks, uint8_t chrBanks) :Mapper(prgBanks, chrBanks) 
 {
+
 }
-
-
+/*
+* 析构函数
+*/
 Mapper_000::~Mapper_000()
 {
+	// 没有动态申请动态空间，所以函数体为空
 }
 
-void Mapper_000::reset()
-{
-
-}
-
+/*
+* 此函数负责将CPU读取请求的地址段 0x8000-0xFFFF 映射到Cartridge上的PRGMemory上的真实地址段
+* 
+*/
 bool Mapper_000::cpuMapRead(uint16_t addr, uint32_t& mapped_addr, uint8_t& data)
 {
-	// if PRGROM is 16KB
-	//     CPU Address Bus          PRG ROM
-	//     0x8000 -> 0xBFFF: Map    0x0000 -> 0x3FFF
-	//     0xC000 -> 0xFFFF: Mirror 0x0000 -> 0x3FFF
-	// if PRGROM is 32KB
-	//     CPU Address Bus          PRG ROM
-	//     0x8000 -> 0xFFFF: Map    0x0000 -> 0x7FFF	
-	if (addr >= 0x8000 && addr <= 0xFFFF)
-	{
+	// 如果游戏卡中PRG块只有一块,即总大小只有16KB
+	// Mapper_000会使用镜像技术将大小为32KB的地址段 0x8000-0xFFFF 映射到 0x0000-0x3FFF 这一段大小为16KB的PRGMemory上
+	// 0x8000 -> 0xBFFF => 0x0000 -> 3FFF
+	// 0xC000 -> 0xFFFF => 0x0000 -> 3FFF
+	// 如果有两块
+	// 0x8000 -> 0xFFFF => 0x0000 -> 7FFF
+	if (addr >= 0x8000 && addr <= 0xFFFF) {
+		// 根据PRG块的大小选择映射方式
 		mapped_addr = addr & (nPRGBanks > 1 ? 0x7FFF : 0x3FFF);
+
 		return true;
 	}
 
 	return false;
 }
 
+/*
+* 此函数负责将CPU写入请求的地址段 0x8000-0xFFFF 映射到Cartridge上的PRGMemory上的真实地址段
+*
+*/
 bool Mapper_000::cpuMapWrite(uint16_t addr, uint32_t& mapped_addr, uint8_t data)
 {
-	if (addr >= 0x8000 && addr <= 0xFFFF)
-	{
+	// 如果游戏卡中PRG块只有一块,即总大小只有16KB
+	// Mapper_000会使用镜像技术将大小为32KB的地址段 0x8000-0xFFFF 映射到 0x0000-0x3FFF 这一段大小为16KB的PRGMemory上
+	// 0x8000 -> 0xBFFF => 0x0000 -> 3FFF
+	// 0xC000 -> 0xFFFF => 0x0000 -> 3FFF
+	// 如果有两块
+	// 0x8000 -> 0xFFFF => 0x0000 -> 7FFF
+	if (addr >= 0x8000 && addr <= 0xFFFF) {
+		// 根据PRG块的大小选择映射方式
 		mapped_addr = addr & (nPRGBanks > 1 ? 0x7FFF : 0x3FFF);
+
 		return true;
 	}
 
 	return false;
 }
 
+/*
+* 此函数负责将PCPU读取请求的地址段 0x0000-0x1FFF 映射到Cartridge上的CHRMemory真实地址段
+*
+*/
 bool Mapper_000::ppuMapRead(uint16_t addr, uint32_t& mapped_addr)
 {
-	// There is no mapping required for PPU
-	// PPU Address Bus          CHR ROM
-	// 0x0000 -> 0x1FFF: Map    0x0000 -> 0x1FFF
-	if (addr >= 0x0000 && addr <= 0x1FFF)
-	{
+	// 因为PPU的地址段空间与CHRMemory地址段刚好重合
+	// 因此只要在寻址范围内，直接返回相同地址即可
+	if (addr >= 0x0000 && addr <= 0x1FFF) {
 		mapped_addr = addr;
+
 		return true;
 	}
-
 	return false;
 }
 
+/*
+* 此函数负责将PCPU写入请求的地址段 0x0000-0x1FFF 映射到Cartridge上的CHRMemory真实地址段
+*
+*/
 bool Mapper_000::ppuMapWrite(uint16_t addr, uint32_t& mapped_addr)
 {
-	if (addr >= 0x0000 && addr <= 0x1FFF)
-	{
-		if (nCHRBanks == 0)
-		{
-			// Treat as RAM
+	// 因为PPU的地址段空间与CHRMemory地址段刚好重合
+	// 因此只要在寻址范围内，直接返回相同地址即可
+	if (addr >= 0x0000 && addr <= 0x1FFF) {
+		// 如果nCHRBANK为0，这表示Cartridge内有内置的RAM，因此可以写入数据
+		if (nCHRBanks == 0) {
 			mapped_addr = addr;
+
 			return true;
 		}
 	}
-
 	return false;
 }
 
+/*
+* Mapper_000中保持为空即可
+*/
+void Mapper_000::reset()
+{
+}
