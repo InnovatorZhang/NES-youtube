@@ -3,7 +3,7 @@
 /*
 * 默认构造函数 
 */
-Bus::Bus()
+Bus::Bus(uint8_t scale) : ppu(scale)
 {
 	// 在构造函数中连接CPU
 	cpu.ConnectBus(this);
@@ -60,7 +60,13 @@ void Bus::cpuWrite(uint16_t addr, uint8_t data)
 		// 此时CPU不是写入数据，而是获取此时的controler寄存器状态，保存在controller_state变量中，以供后面cpuRead操作慢慢读取
 		// 读取的时候比较奇怪，按道理来讲 8 个按键刚好可以用 1 个 byte 表示，读一次就可以了，但是 NES 读取的时候却是串行的，读 8 次，每次读一个按键，这样做应该是为了兼容性第三方控制器
 		// 所以当CPU写这个地址的时候其实指示保存当前的手柄寄存器的值
-		controller_state[addr & 0x0001] = controller[addr & 0x0001];
+		
+		// 第一种写法，在双人同时游戏时会出现玩家二无法操控的问题，但不是双人同时操作的游戏却没有影响
+		//controller_state[addr & 0x0001] = controller[addr & 0x0001];
+		
+		//第二种写法，可以消除上述bug
+		controller_state[0] = controller[0];
+		controller_state[1] = controller[1];
 	}
 
 }

@@ -9,7 +9,7 @@
 
 class Bus {
 public:
-	Bus();
+	Bus(uint8_t scale = 1);
 	~Bus();
 
 public:
