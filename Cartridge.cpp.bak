@@ -74,7 +74,7 @@ Cartridge::Cartridge(const std::string& sFileName)
 
 			// 从prg_ram_size中获取图形镜像数量，每个图形镜像大小为8KB，将Cartridge类的图形内存空间resize到对应大小
 			nCHRBanks = ((header.prg_ram_size & 0x38) << 8) | header.chr_rom_chunks;
-			vCHRMemory.resize(nCHRBanks * 8 * 1024);
+			vCHRMemory.resize(8 * 1024);
 			// 从文件中读取对应大小到游戏卡内存中
 			ifs.read((char*)vCHRMemory.data(), vCHRMemory.size());
 		}
